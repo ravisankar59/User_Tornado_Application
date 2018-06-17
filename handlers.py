@@ -1,6 +1,7 @@
 from tornado import httpserver
 from tornado import gen
 from tornado.ioloop import IOLoop
+from tornado.web import HTTPError
 import sqlite3 as sqlite
 import tornado.web
 import json
@@ -8,6 +9,7 @@ from config import get_all,get_one, create
 
 
 class AddUserHandler(tornado.web.RequestHandler):
+
     def get(self):
         query = '''SELECT * FROM person'''
         result = get_all(query)
@@ -29,7 +31,8 @@ class SingleUserHandler(tornado.web.RequestHandler):
         query = '''SELECT * FROM person WHERE id="{0}"'''.format(user_id);
         result = get_one(query)
         if result is None:
-            result = "User does not exist with the ID: {0}".format(user_id)
+            result = {"message": "User does not exist with the ID: {0}".format(user_id)}
+            raise HTTPError(404, result["message"])
 
         self.write(json.dumps(result))
 
